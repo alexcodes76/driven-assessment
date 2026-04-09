@@ -1181,6 +1181,7 @@
     <div class="form-group">
       <label class="form-label" for="name-input">Your name</label>
       <input type="text" id="name-input" class="form-input" placeholder="First name" autocomplete="off">
+      <p style="margin-top:8px;font-family:'Source Serif 4',serif;font-size:13px;font-style:italic;color:var(--text-light);">Your name is used to personalize your results only and is never stored or collected.</p>
     </div>
 
     <div class="form-group">
@@ -1535,6 +1536,9 @@ function showResults() {
   }
 
   showScreen('results-screen');
+
+  // Silent data submission to Google Sheets
+  submitToSheets(top.name, second.name, userRole);
 
   // Animate score bars in
   setTimeout(() => {
@@ -2266,6 +2270,32 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+}
+
+// ============================================================
+// DATA COLLECTION
+// ============================================================
+function submitToSheets(topDriver, secondaryDriver, roleTier) {
+  const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd6s7ggpEbBCk85WH42FsE_UzuL6Fulsdo6FAUd7qUWSFbJtQ/formResponse';
+  const tierLabels = { ic: 'Individual Contributor', manager: 'People Manager', lol: 'Leader of Leaders' };
+  const timestamp = new Date().toISOString();
+
+  const params = new URLSearchParams({
+    'entry.1973250870': timestamp,
+    'entry.1758637264': tierLabels[roleTier],
+    'entry.371555730': topDriver,
+    'entry.1795326014': secondaryDriver,
+  });
+
+  // Silent submission via no-cors fetch — no response needed
+  fetch(FORM_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  }).catch(() => {
+    // Fail silently — data collection should never interrupt the user experience
+  });
 }
 
 // ============================================================
