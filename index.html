@@ -1266,6 +1266,16 @@
   </div>
 
   <div class="retake-wrap">
+    <button class="download-btn" onclick="launchNavigator()" style="background:var(--gold);gap:10px;">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7 2 L7.8 6.2 L7 7 L6.2 6.2 Z" fill="currentColor"/>
+        <path d="M7 12 L6.2 7.8 L7 7 L7.8 7.8 Z" fill="currentColor" opacity="0.5"/>
+        <path d="M2 7 L6.2 6.2 L7 7 L6.2 7.8 Z" fill="currentColor" opacity="0.5"/>
+        <path d="M12 7 L7.8 7.8 L7 7 L7.8 6.2 Z" fill="currentColor" opacity="0.3"/>
+      </svg>
+      Open Compass Navigator
+    </button>
     <button class="download-btn" onclick="downloadProfile()">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2327,6 +2337,19 @@ function exitAssessment() {
     landing.classList.remove('screen-exit');
     showScreen('landing-screen');
   }
+}
+
+function launchNavigator() {
+  const sorted = Object.keys(scores).sort((a,b) => scores[b]-scores[a]);
+  const topKey = sorted[0];
+  const secondKey = sorted[1];
+  const params = new URLSearchParams({
+    top: DRIVERS[topKey].name,
+    secondary: DRIVERS[secondKey].name,
+    tier: userRole,
+    name: userName
+  });
+  window.open(`/driven-navigator.html?${params.toString()}`, '_blank');
 }
 
 function downloadProfile() {
