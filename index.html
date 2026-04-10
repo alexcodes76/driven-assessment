@@ -1462,18 +1462,25 @@ function startAssessment() {
 // ============================================================
 function renderQuestion() {
   const p = pairs[currentQ];
+  // Randomly assign which driver appears as A and which as B each render
+  p.flipped = Math.random() < 0.5;
+  const stmtA = p.flipped ? STATEMENTS[p.dB][p.sB] : STATEMENTS[p.dA][p.sA];
+  const stmtB = p.flipped ? STATEMENTS[p.dA][p.sA] : STATEMENTS[p.dB][p.sB];
   document.getElementById('q-num').textContent = `Question ${currentQ+1}`;
   document.getElementById('q-counter').textContent = `${currentQ+1} of ${pairs.length}`;
   document.getElementById('progress-bar').style.width = `${((currentQ)/pairs.length)*100}%`;
-  document.getElementById('text-a').textContent = STATEMENTS[p.dA][p.sA];
-  document.getElementById('text-b').textContent = STATEMENTS[p.dB][p.sB];
+  document.getElementById('text-a').textContent = stmtA;
+  document.getElementById('text-b').textContent = stmtB;
   document.getElementById('card-a').classList.remove('selected');
   document.getElementById('card-b').classList.remove('selected');
 }
 
 function selectChoice(choice) {
   const p = pairs[currentQ];
-  const winner = choice === 'a' ? p.dA : p.dB;
+  // Account for flipped assignment when scoring
+  const winner = p.flipped
+    ? (choice === 'a' ? p.dB : p.dA)
+    : (choice === 'a' ? p.dA : p.dB);
   scores[winner]++;
 
   document.getElementById(`card-${choice}`).classList.add('selected');

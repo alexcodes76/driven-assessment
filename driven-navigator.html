@@ -700,7 +700,7 @@
       <div class="compass-avatar">🧭</div>
       <div>
         <div class="chat-topbar-name">Compass</div>
-        <div class="chat-topbar-area" id="topbar-area-label"></div>
+        <div class="chat-topbar-area" id="topbar-area-label">Driven · </div>
       </div>
     </div>
     <div class="chat-topbar-right">
@@ -793,7 +793,7 @@ function selectArea(area) {
   sessionComplete = false;
   contextGathered = false;
 
-  document.getElementById('topbar-area-label').textContent = AREA_LABELS[area];
+  document.getElementById('topbar-area-label').textContent = 'Driven · ' + AREA_LABELS[area];
   document.getElementById('chat-messages').innerHTML = '';
   updateMapIndicator('mindset');
 
