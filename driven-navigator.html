@@ -875,7 +875,7 @@ async function getCompassResponse(userMessage, systemPrompt, isOpening = false) 
       ? [{ role: 'user', content: userMessage }]
       : conversationHistory;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/compass', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
