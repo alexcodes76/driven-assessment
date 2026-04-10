@@ -590,12 +590,15 @@ function parseSheetData(json) {
   const rows = [];
   const dataRows = json.table.rows;
   dataRows.forEach(row => {
-    if (!row.c || !row.c[2] || !row.c[2].v) return; // skip empty
+    if (!row.c || !row.c[3] || !row.c[3].v) return; // skip empty
+    // Google Forms adds its own timestamp in col 0
+    // Our columns: 0=Google timestamp, 1=our timestamp, 2=role_tier, 3=top_driver, 4=Secondary_driver
+    const googleTs = row.c[0]?.v || '';
     rows.push({
-      timestamp:  row.c[0]?.v || '',
-      role_tier:  row.c[1]?.v || '',
-      top_driver: row.c[2]?.v || '',
-      secondary:  row.c[3]?.v || '',
+      timestamp:  googleTs,
+      role_tier:  row.c[2]?.v || '',
+      top_driver: row.c[3]?.v || '',
+      secondary:  row.c[4]?.v || '',
     });
   });
   return rows;
@@ -661,13 +664,15 @@ function renderDashboard(rows) {
   `;
   body.appendChild(insightEl);
 
-  // Stat cards row
+  // Stat cards row - four cards
   const statsRow = document.createElement('div');
-  statsRow.className = 'dash-row dash-row-3 fade-in';
+  statsRow.className = 'dash-row fade-in';
+  statsRow.style.gridTemplateColumns = 'repeat(4, 1fr)';
   statsRow.innerHTML = `
     ${statCard('Total Assessments', total, 'completed to date', '#c4913a')}
     ${statCard('Top Driver', shortName(topDriver), `${topPct}% of respondents`, DRIVER_COLORS[topDriver])}
-    ${statCard('Managers', tierCounts['People Manager'] + tierCounts['Leader of Leaders'], 'of ' + total + ' respondents', '#1a2744')}
+    ${statCard('Individual Contributors', tierCounts['Individual Contributor'], `of ${total} respondents`, '#1a2744')}
+    ${statCard('Managers and Leaders', tierCounts['People Manager'] + tierCounts['Leader of Leaders'], `of ${total} respondents`, '#2d5a8e')}
   `;
   body.appendChild(statsRow);
 
@@ -811,7 +816,7 @@ function renderDonut(tierCounts, total) {
       <div class="legend-row">
         <div class="legend-dot" style="background:${tier.color}"></div>
         <div class="legend-label">${tier.label}</div>
-        <div class="legend-pct">${pct}%</div>
+        <div class="legend-pct">${count} <span style="color:var(--text-light);font-weight:400">(${pct}%)</span></div>
       </div>
     `;
   }).join('');
@@ -875,9 +880,21 @@ function renderRecent(rows) {
 function formatDate(ts) {
   if (!ts) return '';
   try {
+    // Google Sheets returns dates as "Date(year,month,day,hour,min,sec)"
+    const match = ts.match(/Date\((\d+),(\d+),(\d+)/);
+    if (match) {
+      const d = new Date(
+        parseInt(match[1]),
+        parseInt(match[2]),
+        parseInt(match[3])
+      );
+      return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    }
+    // Fallback for ISO strings
     const d = new Date(ts);
-    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-  } catch { return ts.substring(0,10); }
+    if (!isNaN(d)) return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    return ts.substring(0,10);
+  } catch { return ''; }
 }
 
 function shortTier(tier) {
